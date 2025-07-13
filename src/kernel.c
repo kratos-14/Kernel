@@ -1,6 +1,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "lib/io-access.h"
+#include "lib/global.h"
+#include "lib/cursor.h"
 
 /* Check if the compiler thinks you are targeting the wrong operating system. */
 #if defined(__linux__)
@@ -11,26 +14,6 @@
 #if !defined(__i386__)
 #error "This tutorial needs to be compiled with a ix86-elf compiler"
 #endif
-
-/* Hardware text mode color constants. */
-enum vga_color {
-	VGA_COLOR_BLACK = 0,
-	VGA_COLOR_BLUE = 1,
-	VGA_COLOR_GREEN = 2,
-	VGA_COLOR_CYAN = 3,
-	VGA_COLOR_RED = 4,
-	VGA_COLOR_MAGENTA = 5,
-	VGA_COLOR_BROWN = 6,
-	VGA_COLOR_LIGHT_GREY = 7,
-	VGA_COLOR_DARK_GREY = 8,
-	VGA_COLOR_LIGHT_BLUE = 9,
-	VGA_COLOR_LIGHT_GREEN = 10,
-	VGA_COLOR_LIGHT_CYAN = 11,
-	VGA_COLOR_LIGHT_RED = 12,
-	VGA_COLOR_LIGHT_MAGENTA = 13,
-	VGA_COLOR_LIGHT_BROWN = 14,
-	VGA_COLOR_WHITE = 15,
-};
 
 static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) 
 {
@@ -49,9 +32,6 @@ size_t strlen(const char* str)
 		len++;
 	return len;
 }
-
-static const size_t VGA_WIDTH = 80;
-static const size_t VGA_HEIGHT = 100;
 
 size_t terminal_row;
 size_t terminal_column;
@@ -104,12 +84,28 @@ void terminal_writestring(const char* data)
 	terminal_write(data, strlen(data));
 }
 
+void terminal_newline(const char* ch)
+{
+  if ('\n' == *ch) {
+    ++terminal_row;
+    terminal_column = 0;
+  }
+}
+
 void kernel_main(void) 
 {
 	/* Initialize terminal interface */
 	terminal_initialize();
 
 	/* Newline support is left as an exercise. */
-	terminal_writestring("Hello, kernel World!\n");
+  for(size_t idx=0; idx<100; idx++) {
+    terminal_writestring("Hello, kernel World!");
+    terminal_newline("\n");
+    terminal_writestring("Bye!!");
+    terminal_newline("\n");
+    terminal_writestring("What is the behaviour");
+    terminal_newline("\n");
+  }
+  update_cursor_pos(terminal_column, terminal_row);
 }
 
